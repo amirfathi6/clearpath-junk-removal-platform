@@ -417,6 +417,14 @@ input[type="radio"] {
   padding: 18px;
 }
 
+.primary-flow-panel .section-heading {
+  background: #fbfdfb;
+}
+
+.hidden-controls {
+  display: none;
+}
+
 .upload-zone {
   position: relative;
   display: grid;
@@ -461,6 +469,23 @@ input[type="radio"] {
   line-height: 1.35;
 }
 
+.hero-upload {
+  min-height: 230px;
+}
+
+.hero-upload svg {
+  width: 42px;
+  height: 42px;
+}
+
+.hero-upload strong {
+  font-size: 1.08rem;
+}
+
+.hero-upload span {
+  max-width: 540px;
+}
+
 .preview-frame {
   overflow: hidden;
   border: 1px solid var(--line);
@@ -482,7 +507,7 @@ input[type="radio"] {
 
 .scan-actions {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) minmax(130px, auto) minmax(92px, auto);
+  grid-template-columns: minmax(150px, 1fr) minmax(92px, auto);
   gap: 8px;
 }
 
@@ -544,7 +569,7 @@ input[type="radio"] {
 
 .detected-row {
   display: grid;
-  grid-template-columns: minmax(140px, 1.2fr) minmax(90px, 0.7fr) minmax(130px, 1fr);
+  grid-template-columns: minmax(130px, 1.1fr) minmax(86px, 0.62fr) minmax(110px, 0.8fr) minmax(150px, 1.3fr);
   gap: 10px;
   align-items: start;
   padding: 11px 12px;
@@ -621,6 +646,25 @@ input[type="radio"] {
   display: grid;
   gap: 12px;
   padding: 16px;
+}
+
+.empty-recommendations {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px dashed #b8c5ba;
+  border-radius: 8px;
+  background: #fbfdfb;
+}
+
+.empty-recommendations strong {
+  font-size: 0.95rem;
+}
+
+.empty-recommendations span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 .recommendation-card {

@@ -51,8 +51,8 @@
       <main class="main">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Nationwide junk removal matching</p>
-            <h1>Find the best removal path for a customer request.</h1>
+            <p class="eyebrow">Image-based removal matching</p>
+            <h1>Upload a photo, identify the items, and route each one to the best removal option.</h1>
           </div>
           <div class="topbar-actions">
             <button class="icon-button" type="button" aria-label="Refresh recommendations" title="Refresh recommendations" id="refreshButton">
@@ -67,65 +67,115 @@
 
         <section class="metrics-strip" aria-label="Matching summary">
           <div>
-            <span>Estimated job size</span>
-            <strong id="sizeMetric">Medium load</strong>
+            <span>Recognized load</span>
+            <strong id="sizeMetric">Awaiting image</strong>
           </div>
           <div>
-            <span>Expected range</span>
-            <strong id="rangeMetric">$180-$390</strong>
+            <span>Image-based range</span>
+            <strong id="rangeMetric">$0-$0</strong>
           </div>
           <div>
-            <span>Best fit</span>
-            <strong id="fitMetric">Hybrid removal</strong>
+            <span>Best route</span>
+            <strong id="fitMetric">Upload first</strong>
           </div>
           <div>
-            <span>Eco confidence</span>
-            <strong id="ecoMetric">High</strong>
+            <span>Reuse confidence</span>
+            <strong id="ecoMetric">--</strong>
           </div>
         </section>
 
         <div class="workspace-grid">
           <div class="left-stack">
+            <section class="panel image-panel primary-flow-panel" aria-labelledby="imageTitle">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Step 1</p>
+                  <h2 id="imageTitle">Upload a photo</h2>
+                </div>
+                <span class="status-pill neutral" id="scanStatus">Awaiting image</span>
+              </div>
+
+              <div class="image-workflow">
+                <label class="upload-zone hero-upload" for="imageUpload" id="uploadZone">
+                  <input type="file" id="imageUpload" accept="image/*">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5"></path></svg>
+                  <strong>Take or upload a customer photo</strong>
+                  <span>The analyzer identifies visible items, itemizes them, estimates removal fees, and routes each item toward pickup, donation, recycling, or drop-off.</span>
+                </label>
+
+                <div class="preview-frame hidden" id="previewFrame">
+                  <img id="imagePreview" alt="Uploaded removal items preview">
+                </div>
+
+                <div class="scan-actions">
+                  <button class="primary-button" type="button" id="analyzeImageButton" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v3"></path><path d="M15 3v3"></path><path d="M9 18v3"></path><path d="M15 18v3"></path><path d="M3 9h3"></path><path d="M18 9h3"></path><path d="M3 15h3"></path><path d="M18 15h3"></path><rect x="6" y="6" width="12" height="12" rx="2"></rect><path d="M10 12h4"></path></svg>
+                    Analyze image
+                  </button>
+                  <button class="secondary-button" type="button" id="clearImageButton" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                    Clear
+                  </button>
+                </div>
+
+                <div class="scan-summary" id="scanSummary" aria-live="polite">
+                  <div>
+                    <span>Recognized items</span>
+                    <strong id="detectedCount">0</strong>
+                  </div>
+                  <div>
+                    <span>Itemized estimate</span>
+                    <strong id="detectedRange">$0-$0</strong>
+                  </div>
+                  <div>
+                    <span>Confidence</span>
+                    <strong id="detectedConfidence">--</strong>
+                  </div>
+                </div>
+
+                <div class="detected-list empty" id="detectedItems">
+                  <p>Upload a photo to begin. Recognized items will appear here with category, estimate, and best disposal path.</p>
+                </div>
+              </div>
+            </section>
+
             <section class="panel intake-panel" aria-labelledby="intakeTitle">
               <div class="section-heading">
                 <div>
-                  <p class="eyebrow">Customer intake</p>
-                  <h2 id="intakeTitle">Removal request</h2>
+                  <p class="eyebrow">Step 2</p>
+                  <h2 id="intakeTitle">Route context</h2>
                 </div>
-                <span class="status-pill">Live estimate</span>
+                <span class="status-pill">Live routing</span>
               </div>
 
               <form id="matchForm" class="intake-form">
                 <label class="field">
                   <span>ZIP code</span>
                   <input type="text" id="zipCode" inputmode="numeric" maxlength="5" value="94107" aria-describedby="zipHint">
-                  <small id="zipHint">Used for provider coverage and local disposal rules.</small>
+                  <small id="zipHint">Used for provider coverage and local donation, recycling, or drop-off options.</small>
                 </label>
 
-                <div class="field">
-                  <span>Items to remove</span>
-                  <div class="check-grid" id="itemChoices">
-                    <label><input type="checkbox" value="furniture" checked>Furniture</label>
-                    <label><input type="checkbox" value="appliances">Appliances</label>
-                    <label><input type="checkbox" value="electronics">Electronics</label>
-                    <label><input type="checkbox" value="yard">Yard waste</label>
-                    <label><input type="checkbox" value="construction">Construction debris</label>
-                    <label><input type="checkbox" value="mattress" checked>Mattress</label>
-                  </div>
+                <div class="hidden-controls" id="itemChoices" aria-hidden="true">
+                  <input type="checkbox" value="furniture">
+                  <input type="checkbox" value="appliances">
+                  <input type="checkbox" value="electronics">
+                  <input type="checkbox" value="yard">
+                  <input type="checkbox" value="construction">
+                  <input type="checkbox" value="mattress">
                 </div>
 
                 <label class="field">
-                  <span>Approximate volume</span>
+                  <span>Detected load size</span>
                   <select id="volume">
-                    <option value="small">Small: 1-3 bulky items</option>
-                    <option value="medium" selected>Medium: quarter truck</option>
+                    <option value="small">Small: 1-3 visible items</option>
+                    <option value="medium" selected>Medium: several bulky items</option>
                     <option value="large">Large: half truck or more</option>
                     <option value="estate">Estate or cleanout</option>
                   </select>
                 </label>
 
                 <label class="field">
-                  <span>Item condition</span>
+                  <span>Overall condition</span>
                   <select id="condition">
                     <option value="good" selected>Good enough to donate</option>
                     <option value="fair">Mixed condition</option>
@@ -135,7 +185,7 @@
                 </label>
 
                 <div class="field">
-                  <span>Pickup timeline</span>
+                  <span>Needed timeline</span>
                   <div class="segmented" role="radiogroup" aria-label="Pickup timeline">
                     <label><input type="radio" name="timeline" value="today">Today</label>
                     <label><input type="radio" name="timeline" value="week" checked>This week</label>
@@ -144,7 +194,7 @@
                 </div>
 
                 <label class="field">
-                  <span>Priority</span>
+                  <span>Recommendation priority</span>
                   <select id="priority">
                     <option value="balanced" selected>Balanced price, speed, reliability</option>
                     <option value="lowest">Lowest likely cost</option>
@@ -159,81 +209,24 @@
                   <span>Includes stairs, elevator, or difficult access</span>
                 </label>
 
-                <label class="toggle-row">
-                  <input type="checkbox" id="photoReady">
-                  <span>Customer can upload photos before dispatch</span>
+                <label class="toggle-row hidden-controls">
+                  <input type="checkbox" id="photoReady" checked>
+                  <span>Photo uploaded</span>
                 </label>
               </form>
-            </section>
-
-            <section class="panel image-panel" aria-labelledby="imageTitle">
-              <div class="section-heading">
-                <div>
-                  <p class="eyebrow">AI image agent</p>
-                  <h2 id="imageTitle">Photo itemization</h2>
-                </div>
-                <span class="status-pill neutral" id="scanStatus">Awaiting image</span>
-              </div>
-
-              <div class="image-workflow">
-                <label class="upload-zone" for="imageUpload" id="uploadZone">
-                  <input type="file" id="imageUpload" accept="image/*">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5"></path></svg>
-                  <strong>Upload customer photo</strong>
-                  <span>JPG, PNG, or HEIC from a phone walkthrough.</span>
-                </label>
-
-                <div class="preview-frame hidden" id="previewFrame">
-                  <img id="imagePreview" alt="Uploaded removal items preview">
-                </div>
-
-                <div class="scan-actions">
-                  <button class="primary-button" type="button" id="analyzeImageButton" disabled>
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v3"></path><path d="M15 3v3"></path><path d="M9 18v3"></path><path d="M15 18v3"></path><path d="M3 9h3"></path><path d="M18 9h3"></path><path d="M3 15h3"></path><path d="M18 15h3"></path><rect x="6" y="6" width="12" height="12" rx="2"></rect><path d="M10 12h4"></path></svg>
-                    Analyze image
-                  </button>
-                  <button class="secondary-button" type="button" id="applyScanButton" disabled>
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
-                    Apply to intake
-                  </button>
-                  <button class="secondary-button" type="button" id="clearImageButton" disabled>
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-                    Clear
-                  </button>
-                </div>
-
-                <div class="scan-summary" id="scanSummary" aria-live="polite">
-                  <div>
-                    <span>Detected items</span>
-                    <strong id="detectedCount">0</strong>
-                  </div>
-                  <div>
-                    <span>Itemized fees</span>
-                    <strong id="detectedRange">$0-$0</strong>
-                  </div>
-                  <div>
-                    <span>Confidence</span>
-                    <strong id="detectedConfidence">--</strong>
-                  </div>
-                </div>
-
-                <div class="detected-list empty" id="detectedItems">
-                  <p>Upload a photo to itemize visible junk, estimate removal fees, and identify donation or recycling candidates.</p>
-                </div>
-              </div>
             </section>
           </div>
 
           <section class="panel results-panel" aria-labelledby="resultsTitle">
             <div class="section-heading results-heading">
               <div>
-                <p class="eyebrow">Ranked recommendations</p>
-                <h2 id="resultsTitle">Best options</h2>
+                <p class="eyebrow">Step 3</p>
+                <h2 id="resultsTitle">Best removal and local route options</h2>
               </div>
               <div class="tabs" role="tablist" aria-label="Recommendation filters">
                 <button type="button" class="tab active" data-filter="all">All</button>
                 <button type="button" class="tab" data-filter="hauler">Haulers</button>
-                <button type="button" class="tab" data-filter="eco">Eco</button>
+                <button type="button" class="tab" data-filter="eco">Local routes</button>
               </div>
             </div>
 
@@ -246,7 +239,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-8"></path></svg>
             <div>
               <strong>Pricing intelligence</strong>
-              <span>Blends provider minimums, item type, urgency, access friction, and volume estimates.</span>
+              <span>Starts from recognized photo items, then adjusts for load size, urgency, access friction, and provider minimums.</span>
             </div>
           </div>
           <div class="insight">
@@ -260,7 +253,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c8 0 12-5 12-13v-1h-1C9 5 5 9 5 17v2h1Z"></path><path d="M5 19c4-5 7-7 13-10"></path></svg>
             <div>
               <strong>Ethical routing</strong>
-              <span>Surfaces donation, reuse, recycling, and scrap options when they beat landfill disposal.</span>
+              <span>Surfaces pickup, donation, recycling, scrap, municipal, and drop-off paths when they make more sense than a hauler.</span>
             </div>
           </div>
         </section>

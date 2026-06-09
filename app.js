@@ -92,6 +92,52 @@ const providers = [
     risks: ["Customer may need drop-off or curb sorting"]
   },
   {
+    name: "Neighborhood Donation Center",
+    type: "Local donation drop-off",
+    category: "eco",
+    baseScore: 74,
+    min: 0,
+    max: 45,
+    speed: "Flexible",
+    response: "Walk-in or scheduled",
+    onTime: 100,
+    eco: 94,
+    rating: 4.4,
+    site: "https://example.com/local/neighborhood-donation-center",
+    contact: {
+      phone: "(800) 555-0142",
+      email: "intake@donation-center.example",
+      hours: "Mon-Sat, 10 AM-6 PM",
+      serviceArea: "Reusable furniture and household goods"
+    },
+    itemFit: ["furniture", "electronics", "appliances"],
+    strengths: ["Best for items still in usable condition", "Often avoids disposal fees", "Can redirect rejected items to recycling partners"],
+    risks: ["Drop-off or scheduled intake may be required"]
+  },
+  {
+    name: "Regional Scrap & E-Waste Yard",
+    type: "Scrap and recycling drop-off",
+    category: "eco",
+    baseScore: 73,
+    min: 0,
+    max: 85,
+    speed: "Same day drop-off",
+    response: "Self-service",
+    onTime: 100,
+    eco: 89,
+    rating: 4.3,
+    site: "https://example.com/local/regional-scrap-ewaste-yard",
+    contact: {
+      phone: "(877) 555-0129",
+      email: "scalehouse@scrap-ewaste.example",
+      hours: "Mon-Fri, 8 AM-5 PM",
+      serviceArea: "Appliances, metal, electronics, and recyclable materials"
+    },
+    itemFit: ["appliances", "electronics", "construction"],
+    strengths: ["Strong fit for appliances and e-waste", "Lower-cost path when customer can transport", "Keeps recoverable material out of landfill"],
+    risks: ["May require unloading and proof of residency for some materials"]
+  },
+  {
     name: "RapidHaul Marketplace Partner",
     type: "On-demand hauler",
     category: "hauler",
@@ -245,6 +291,10 @@ let uploadedImageMeta = null;
 let detectedItems = [];
 
 function selectedItems() {
+  if (detectedItems.length) {
+    return [...new Set(detectedItems.map((item) => item.category))];
+  }
+
   return [...document.querySelectorAll("#itemChoices input:checked")].map((input) => input.value);
 }
 
@@ -274,11 +324,18 @@ function estimateRange(provider, state) {
   const photoDiscount = state.photoReady ? -18 : 0;
   const disposalPremium = state.condition === "hazard" ? 75 : state.condition === "poor" ? 28 : 0;
   const donationRelief = provider.category === "eco" && state.condition === "good" ? -42 : 0;
-  const scanFee = state.scanItems.reduce((total, item) => total + (item.low + item.high) / 2, 0);
-  const scanDetail = state.scanItems.length ? scanFee * 0.16 : 0;
 
-  const low = (provider.min + complexity * 0.45 + urgency + access + photoDiscount + donationRelief + scanDetail) * volume.min;
-  const high = (provider.max + complexity * 0.85 + urgency + access + disposalPremium + scanDetail * 1.35) * volume.max;
+  if (state.scanItems.length) {
+    const itemized = sumDetectedRange(state.scanItems);
+    const routeFactor = provider.category === "eco" ? 0.42 : provider.name.includes("Clearout") ? 1.12 : 0.98;
+    const routeMinimum = provider.category === "eco" ? provider.min : Math.max(provider.min, itemized.low * 0.55);
+    const low = (routeMinimum + itemized.low * routeFactor + urgency + access + photoDiscount + donationRelief) * volume.min;
+    const high = (provider.min + itemized.high * (routeFactor + 0.18) + urgency + access + disposalPremium) * volume.max;
+    return { low, high };
+  }
+
+  const low = (provider.min + complexity * 0.45 + urgency + access + photoDiscount + donationRelief) * volume.min;
+  const high = (provider.max + complexity * 0.85 + urgency + access + disposalPremium) * volume.max;
   return { low, high };
 }
 
@@ -332,6 +389,17 @@ function recommendationReason(provider, state, estimate) {
 
 function renderRecommendations() {
   const state = getState();
+  if (!state.scanItems.length) {
+    recommendationRoot.innerHTML = `
+      <div class="empty-recommendations">
+        <strong>Upload and analyze an image to generate options.</strong>
+        <span>The platform will use recognized items to rank haulers, donation pickups, recycling paths, scrap options, and local drop-off routes.</span>
+      </div>
+    `;
+    updateMetrics([], state);
+    return;
+  }
+
   const scored = providers
     .filter((provider) => activeFilter === "all" || provider.category === activeFilter)
     .map((provider) => {
@@ -349,12 +417,26 @@ function renderRecommendations() {
 }
 
 function updateMetrics(scored, state) {
+  if (!state.scanItems.length) {
+    document.querySelector("#sizeMetric").textContent = "Awaiting image";
+    document.querySelector("#rangeMetric").textContent = "$0-$0";
+    document.querySelector("#fitMetric").textContent = "Upload first";
+    document.querySelector("#ecoMetric").textContent = "--";
+    return;
+  }
+
   const first = scored[0];
   const allEstimates = scored.map((provider) => provider.estimate);
-  const min = Math.min(...allEstimates.map((estimate) => estimate.low));
-  const max = Math.max(...allEstimates.map((estimate) => estimate.high));
+  const itemized = sumDetectedRange(state.scanItems);
+  const min = Math.min(itemized.low, ...allEstimates.map((estimate) => estimate.low));
+  const max = Math.max(itemized.high, ...allEstimates.map((estimate) => estimate.high));
   const ecoConfidence = first && first.eco > 88 ? "Very high" : first && first.eco > 70 ? "High" : "Moderate";
-  const fit = state.condition === "good" && state.timeline !== "today" ? "Reuse first" : first?.category === "eco" ? "Eco route" : "Full-service pickup";
+  const reusable = state.scanItems.filter((item) => item.route.includes("Donation") || item.route.includes("Reusable") || item.route.includes("recycling")).length;
+  const fit = reusable >= Math.ceil(state.scanItems.length / 2) && state.timeline !== "today"
+    ? "Reuse or recycle first"
+    : first?.category === "eco"
+      ? "Local route"
+      : "Full-service pickup";
 
   document.querySelector("#sizeMetric").textContent = volumeProfile[state.volume].size;
   document.querySelector("#rangeMetric").textContent = `${money(min)}-${money(max)}`;
@@ -561,7 +643,7 @@ function renderDetectedItems(items) {
 
   if (!items.length) {
     detectedItemsRoot.className = "detected-list empty";
-    detectedItemsRoot.innerHTML = "<p>Upload a photo to itemize visible junk, estimate removal fees, and identify donation or recycling candidates.</p>";
+    detectedItemsRoot.innerHTML = "<p>Upload a photo to begin. Recognized items will appear here with category, estimate, and best disposal path.</p>";
     return;
   }
 
@@ -571,7 +653,8 @@ function renderDetectedItems(items) {
       <div class="detected-row header" role="row">
         <span role="columnheader">Item</span>
         <span role="columnheader">Category</span>
-        <span role="columnheader">Fee</span>
+        <span role="columnheader">Estimate</span>
+        <span role="columnheader">Best path</span>
       </div>
       ${items.map((item) => `
         <div class="detected-row" role="row">
@@ -582,12 +665,28 @@ function renderDetectedItems(items) {
           <span role="cell">${categoryLabel(item.category)}</span>
           <span role="cell">
             <strong>${money(item.low)}-${money(item.high)}</strong>
-            <small>${item.route}</small>
+            <small>Possible removal fee</small>
+          </span>
+          <span role="cell">
+            <strong>${item.route}</strong>
+            <small>${localPathForItem(item)}</small>
           </span>
         </div>
       `).join("")}
     </div>
   `;
+}
+
+function localPathForItem(item) {
+  const paths = {
+    furniture: "Donation pickup or reuse center if condition is good",
+    appliances: "Appliance recycler, scrap yard, or full-service hauler",
+    electronics: "E-waste drop-off or certified recycling desk",
+    yard: "Green waste pickup, compost center, or municipal drop-off",
+    construction: "Debris hauler or construction-material transfer station",
+    mattress: "Mattress recycler or bulky-item pickup"
+  };
+  return paths[item.category] || "Compare local pickup and drop-off options";
 }
 
 function categoryLabel(category) {
@@ -622,7 +721,6 @@ function applyScanToIntake() {
 
   document.querySelector("#photoReady").checked = true;
   renderRecommendations();
-  showToast("Image itemization applied to the removal request.");
 }
 
 function clearImageScan() {
@@ -632,7 +730,7 @@ function clearImageScan() {
   uploadedImageMeta = null;
   detectedItems = [];
   analyzeImageButton.disabled = true;
-  applyScanButton.disabled = true;
+  if (applyScanButton) applyScanButton.disabled = true;
   clearImageButton.disabled = true;
   setScanStatus("Awaiting image");
   renderDetectedItems([]);
@@ -651,7 +749,7 @@ imageUpload.addEventListener("change", () => {
 
   const imageUrl = URL.createObjectURL(file);
   analyzeImageButton.disabled = true;
-  applyScanButton.disabled = true;
+  if (applyScanButton) applyScanButton.disabled = true;
   clearImageButton.disabled = false;
   setScanStatus("Loading image");
 
@@ -688,13 +786,13 @@ analyzeImageButton.addEventListener("click", () => {
 
   detectedItems = analyzeImageMeta(uploadedImageMeta);
   renderDetectedItems(detectedItems);
-  applyScanButton.disabled = false;
+  applyScanToIntake();
+  if (applyScanButton) applyScanButton.disabled = false;
   setScanStatus("Itemized", "ready");
-  renderRecommendations();
-  showToast("AI itemization complete with estimated fee ranges.");
+  showToast("AI itemization complete. Recommendations updated.");
 });
 
-applyScanButton.addEventListener("click", applyScanToIntake);
+if (applyScanButton) applyScanButton.addEventListener("click", applyScanToIntake);
 clearImageButton.addEventListener("click", clearImageScan);
 
 tabs.forEach((tab) => {
@@ -716,7 +814,7 @@ recommendationRoot.addEventListener("click", (event) => {
 });
 
 document.querySelector("#quoteButton").addEventListener("click", () => {
-  showToast("Quote packet prepared with request details, estimate range, and top providers.");
+  showToast("Quote packet prepared with photo itemization, fee ranges, and recommended routes.");
 });
 
 document.querySelector("#refreshButton").addEventListener("click", () => {
