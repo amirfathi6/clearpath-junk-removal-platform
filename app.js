@@ -11,6 +11,13 @@ const providers = [
     onTime: 92,
     eco: 67,
     rating: 4.7,
+    site: "https://example.com/providers/loadlift-junk-co",
+    contact: {
+      phone: "(415) 555-0184",
+      email: "dispatch@loadlift.example",
+      hours: "Mon-Sat, 7 AM-7 PM",
+      serviceArea: "Dense metro ZIP codes"
+    },
     itemFit: ["furniture", "mattress", "appliances", "electronics"],
     strengths: ["Strong bulky item fit", "Good photo quote workflow", "Licensed two-person crews"],
     risks: ["Higher minimum for stairs"]
@@ -27,6 +34,13 @@ const providers = [
     onTime: 88,
     eco: 96,
     rating: 4.6,
+    site: "https://example.com/providers/renew-pickup-network",
+    contact: {
+      phone: "(888) 555-0136",
+      email: "pickup@renew.example",
+      hours: "Tue-Sat, 9 AM-5 PM",
+      serviceArea: "Donation partner routes"
+    },
     itemFit: ["furniture", "electronics", "appliances"],
     strengths: ["Prioritizes reuse before disposal", "Best for good-condition items", "Low customer cost"],
     risks: ["May reject damaged or stained items"]
@@ -43,6 +57,13 @@ const providers = [
     onTime: 86,
     eco: 58,
     rating: 4.5,
+    site: "https://example.com/providers/metro-clearout-pros",
+    contact: {
+      phone: "(510) 555-0169",
+      email: "quotes@metroclearout.example",
+      hours: "Daily, 6 AM-8 PM",
+      serviceArea: "Large cleanouts and multi-room jobs"
+    },
     itemFit: ["construction", "yard", "furniture", "mattress", "appliances"],
     strengths: ["Best fit for high-volume jobs", "Handles difficult access", "Transparent truck-load pricing"],
     risks: ["Some late-arrival reports during weekend slots"]
@@ -59,6 +80,13 @@ const providers = [
     onTime: 100,
     eco: 91,
     rating: 4.2,
+    site: "https://example.com/providers/city-reuse-recycling-desk",
+    contact: {
+      phone: null,
+      email: "recycling-info@citydesk.example",
+      hours: "Online guidance, 24/7",
+      serviceArea: "ZIP-specific municipal guidance"
+    },
     itemFit: ["electronics", "yard", "appliances", "mattress"],
     strengths: ["Ethical disposal guidance", "Good for electronics and appliances", "Often cheapest with flexible timing"],
     risks: ["Customer may need drop-off or curb sorting"]
@@ -75,6 +103,13 @@ const providers = [
     onTime: 79,
     eco: 49,
     rating: 4.1,
+    site: "https://example.com/providers/rapidhaul-marketplace-partner",
+    contact: {
+      phone: "(855) 555-0198",
+      email: null,
+      hours: "On-demand windows, market dependent",
+      serviceArea: "Most high-density service areas"
+    },
     itemFit: ["furniture", "mattress", "yard", "construction"],
     strengths: ["Best speed for urgent jobs", "Instant booking windows", "Covers most dense ZIP codes"],
     risks: ["Repeated professionalism complaints in a few markets"]
@@ -338,62 +373,112 @@ function cardTemplate(provider, rank, state) {
     `)
     .join("");
   const riskClass = provider.risks.some((risk) => risk.includes("complaints")) ? "risk" : "warning";
+  const phone = provider.contact.phone || "Not listed";
+  const email = provider.contact.email || "Not listed";
 
   return `
-    <article class="recommendation-card">
-      <div class="recommendation-top">
-        <div class="rank-line">
+    <details class="recommendation-card">
+      <summary class="recommendation-summary">
+        <div class="summary-main">
           <span class="rank-badge">${rank}</span>
-          <div>
-            <span class="provider-name">${provider.name}</span>
+          <div class="summary-provider">
+            <a class="provider-name" href="${provider.site}" target="_blank" rel="noopener noreferrer">
+              ${provider.name}
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M9 7h8v8"></path></svg>
+            </a>
             <span class="provider-type">${provider.type}</span>
+            <span class="provider-contact">${phone}</span>
           </div>
         </div>
-        <div class="score-block">
-          <strong>${provider.score}</strong>
-          <span>match score</span>
+
+        <div class="summary-meta" aria-label="Collapsed company summary">
+          <div>
+            <span>Estimate</span>
+            <strong>${estimate}</strong>
+          </div>
+          <div>
+            <span>Availability</span>
+            <strong>${provider.speed}</strong>
+          </div>
+          <div>
+            <span>Match</span>
+            <strong>${provider.score}</strong>
+          </div>
+          <div>
+            <span>Contact</span>
+            <strong>${provider.contact.phone ? "Phone listed" : provider.contact.email ? "Email only" : "Self-service"}</strong>
+          </div>
+        </div>
+      </summary>
+
+      <div class="recommendation-body">
+        <div class="recommendation-meta">
+          <div class="meta-item">
+            <span>Estimate</span>
+            <strong>${estimate}</strong>
+          </div>
+          <div class="meta-item">
+            <span>Availability</span>
+            <strong>${provider.speed}</strong>
+          </div>
+          <div class="meta-item">
+            <span>On time</span>
+            <strong>${provider.onTime}%</strong>
+          </div>
+          <div class="meta-item">
+            <span>Eco score</span>
+            <strong>${provider.eco}/100</strong>
+          </div>
+        </div>
+
+        <div class="contact-grid">
+          <div>
+            <span>Website</span>
+            <a href="${provider.site}" target="_blank" rel="noopener noreferrer">${provider.site.replace("https://", "")}</a>
+          </div>
+          <div>
+            <span>Phone</span>
+            <strong>${phone}</strong>
+          </div>
+          <div>
+            <span>Email</span>
+            <strong>${email}</strong>
+          </div>
+          <div>
+            <span>Hours</span>
+            <strong>${provider.contact.hours}</strong>
+          </div>
+          <div>
+            <span>Service fit</span>
+            <strong>${provider.contact.serviceArea}</strong>
+          </div>
+          <div>
+            <span>Response</span>
+            <strong>${provider.response}</strong>
+          </div>
+        </div>
+
+        <ul class="reason-list">${reasons}</ul>
+
+        <ul class="reason-list">
+          <li>
+            <svg class="${riskClass}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="m10.3 4.3-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-2.7l-8-14a2 2 0 0 0-3.4 0Z"></path></svg>
+            <span>${provider.risks[0]}</span>
+          </li>
+        </ul>
+
+        <div class="card-actions">
+          <button class="secondary-button" type="button" data-action="details" data-provider="${provider.name}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            Compare details
+          </button>
+          <button class="secondary-button" type="button" data-action="shortlist" data-provider="${provider.name}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21 12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"></path></svg>
+            Shortlist
+          </button>
         </div>
       </div>
-
-      <div class="recommendation-meta">
-        <div class="meta-item">
-          <span>Estimate</span>
-          <strong>${estimate}</strong>
-        </div>
-        <div class="meta-item">
-          <span>Availability</span>
-          <strong>${provider.speed}</strong>
-        </div>
-        <div class="meta-item">
-          <span>On time</span>
-          <strong>${provider.onTime}%</strong>
-        </div>
-        <div class="meta-item">
-          <span>Eco score</span>
-          <strong>${provider.eco}/100</strong>
-        </div>
-      </div>
-
-      <ul class="reason-list">${reasons}</ul>
-
-      <ul class="reason-list">
-        <li>
-          <svg class="${riskClass}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="m10.3 4.3-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-2.7l-8-14a2 2 0 0 0-3.4 0Z"></path></svg>
-          <span>${provider.risks[0]}</span>
-        </li>
-      </ul>
-
-      <div class="card-actions">
-        <button class="secondary-button" type="button" data-action="details" data-provider="${provider.name}">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-          Compare details
-        </button>
-        <button class="secondary-button" type="button" data-action="shortlist" data-provider="${provider.name}">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21 12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"></path></svg>
-          Shortlist
-        </button>
-      </div>
-    </article>
+    </details>
   `;
 }
 
