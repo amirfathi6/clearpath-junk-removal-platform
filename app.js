@@ -11,6 +11,8 @@ const providers = [
     onTime: 92,
     eco: 67,
     rating: 4.7,
+    marketSignal: "3 pickup windows likely this week",
+    valueBadge: "Avoids repeat quote calls",
     site: "https://example.com/providers/loadlift-junk-co",
     contact: {
       phone: "(415) 555-0184",
@@ -34,6 +36,8 @@ const providers = [
     onTime: 88,
     eco: 96,
     rating: 4.6,
+    marketSignal: "Donation intake fills quickly",
+    valueBadge: "May reduce disposal cost",
     site: "https://example.com/providers/renew-pickup-network",
     contact: {
       phone: "(888) 555-0136",
@@ -57,6 +61,8 @@ const providers = [
     onTime: 86,
     eco: 58,
     rating: 4.5,
+    marketSignal: "Best for large jobs before weekend",
+    valueBadge: "Handles difficult access",
     site: "https://example.com/providers/metro-clearout-pros",
     contact: {
       phone: "(510) 555-0169",
@@ -80,6 +86,8 @@ const providers = [
     onTime: 100,
     eco: 91,
     rating: 4.2,
+    marketSignal: "Local rules vary by ZIP",
+    valueBadge: "Finds lower-cost routes",
     site: "https://example.com/providers/city-reuse-recycling-desk",
     contact: {
       phone: null,
@@ -103,6 +111,8 @@ const providers = [
     onTime: 100,
     eco: 94,
     rating: 4.4,
+    marketSignal: "Reusable items accepted by condition",
+    valueBadge: "Can avoid landfill fees",
     site: "https://example.com/local/neighborhood-donation-center",
     contact: {
       phone: "(800) 555-0142",
@@ -126,6 +136,8 @@ const providers = [
     onTime: 100,
     eco: 89,
     rating: 4.3,
+    marketSignal: "Same-day drop-off can close early",
+    valueBadge: "Best for recoverable materials",
     site: "https://example.com/local/regional-scrap-ewaste-yard",
     contact: {
       phone: "(877) 555-0129",
@@ -149,6 +161,8 @@ const providers = [
     onTime: 79,
     eco: 49,
     rating: 4.1,
+    marketSignal: "Fast slots change throughout the day",
+    valueBadge: "Fastest booking path",
     site: "https://example.com/providers/rapidhaul-marketplace-partner",
     contact: {
       phone: "(855) 555-0198",
@@ -470,7 +484,13 @@ function cardTemplate(provider, rank, state) {
             </a>
             <span class="provider-type">${provider.type}</span>
             <span class="provider-contact">${phone}</span>
+            <span class="urgency-line">${provider.marketSignal}</span>
           </div>
+        </div>
+
+        <div class="summary-badges">
+          <span>${provider.valueBadge}</span>
+          <span>${provider.category === "eco" ? "Local route" : "Service-ready"}</span>
         </div>
 
         <div class="summary-meta" aria-label="Collapsed company summary">
@@ -537,6 +557,17 @@ function cardTemplate(provider, rank, state) {
           <div>
             <span>Response</span>
             <strong>${provider.response}</strong>
+          </div>
+        </div>
+
+        <div class="conversion-panel">
+          <div>
+            <span>Why act now</span>
+            <strong>${provider.marketSignal}</strong>
+          </div>
+          <div>
+            <span>Platform value</span>
+            <strong>${provider.valueBadge} without manually comparing every option.</strong>
           </div>
         </div>
 
